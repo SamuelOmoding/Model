@@ -1,0 +1,122 @@
+/* src/index.css */
+/* ── GOOGLE FONTS ── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap');
+
+* Prevent horizontal overflow on ALL sections */
+section, footer, nav {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Mobile base font scale */
+@media (max-width: 560px) {
+  html { font-size: 14px; }
+}
+
+/* ── CSS VARIABLES ── */
+:root {
+  --gold:        #C9A84C;
+  --gold-light:  #E8C97A;
+  --deep-black:  #0A0805;
+  --warm-dark:   #140F08;
+  --charcoal:    #1E1610;
+  --cream:       #F5EDD8;
+  --warm-white:  #FAF5EA;
+  --terracotta:  #C4622D;
+  --sienna:      #8B3A1A;
+  --muted-gold:  #A08030;
+}
+
+/* ── RESET ── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--deep-black);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  min-height: 100vh;
+  /* Remove the Vite default centering */
+  display: block;
+  place-items: unset;
+}
+
+/* ── GLOBAL TYPOGRAPHY ── */
+h1, h2, h3, h4 {
+  line-height: 1.1;
+  font-weight: 400;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ── GLOBAL BUTTON RESET ── */
+button {
+  border-radius: 0;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  background-color: transparent;
+  cursor: pointer;
+  transition: none;
+}
+
+button:hover {
+  border-color: transparent;
+}
+
+button:focus,
+button:focus-visible {
+  outline: none;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--deep-black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-gold);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+/* ── SELECTION ── */
+::selection {
+  background: var(--gold);
+  color: var(--deep-black);
+}
+
+
+
+
+
