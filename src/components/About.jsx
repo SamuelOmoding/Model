@@ -339,6 +339,7 @@ export default function About() {
             ))}
           </div>
 
+
           {/* Stats */}
           <div className="about-stats reveal">
             <div>
