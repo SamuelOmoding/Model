@@ -37,7 +37,7 @@ const SOCIALS = [
     id: 3,
     platform: 'Facebook',
     handle: 'African Couzin',
-    url: 'https://www.facebook.com/share/188BSDAe9A/',
+    url: 'https://www.facebook.com/african.couzin',
     description: 'Portfolio updates & brand partnerships',
     color: '#1877F2',
     gradient: 'linear-gradient(135deg, #1877F2, #0a5dc2)',
@@ -66,8 +66,8 @@ const SOCIALS = [
   {
     id: 5,
     platform: 'LinkedIn',
-    handle: '@african_couzin',
-    url: 'https://www.linkedin.com/in/meshack-omoding-267a37330/',
+    handle: 'Samuel Jumah',
+    url: 'https://www.linkedin.com/in/samueljumah',
     description: 'Professional network & brand collaborations',
     color: '#0A66C2',
     gradient: 'linear-gradient(135deg, #0A66C2, #084d91)',
@@ -198,8 +198,8 @@ export default function Socials() {
         /* ── GRID ── */
         .socials-grid {
           display: grid;
-          grid-template-columns: repeat(8, 1fr);
-          gap: 4px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 2px;
         }
 
         /* ── CARD ── */

@@ -1,7 +1,7 @@
 // src/components/Contact.jsx
 import { useState } from 'react'
 
-const EMAIL    = 'meshackomoding254@gmail.com'
+const EMAIL    = 'meshackomoding21@gmail.com'
 const WHATSAPP = '254729298595' 
 
 export default function Contact() {
@@ -319,9 +319,9 @@ export default function Contact() {
           </h2>
 
           <div className="contact-info-list">
-            <a href="mailto:meshackomoding254@gmail.com" className="contact-info-item">
+            <a href="mailto:meshackomoding21@gmail.com" className="contact-info-item">
               <span className="contact-info-label">Email</span>
-              <span className="contact-info-value">meshackomoding254@gmail.com</span>
+              <span className="contact-info-value">meshackomoding21@gmail.com</span>
             </a>
             <a href="tel:+254729298595" className="contact-info-item">
               <span className="contact-info-label">Phone</span>
