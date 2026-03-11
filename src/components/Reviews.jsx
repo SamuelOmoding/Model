@@ -704,7 +704,7 @@ export default function Reviews() {
                 <textarea
                   name="text"
                   className="review-form-textarea"
-                  placeholder="Describe your experience working with Samuel on your project..."
+                  placeholder="Describe your experience working with Meshack on your project..."
                   value={form.text}
                   onChange={handleChange}
                   maxLength={500}
