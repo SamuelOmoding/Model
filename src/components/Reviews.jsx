@@ -1,9 +1,9 @@
 // src/components/Reviews.jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '../supabaseClient'
 
 const INITIAL_REVIEWS = [
   {
-    id: 1,
     name: 'Samuel Jumah',
     role: 'COO',
     company: 'Highmore Tours & Travel',
@@ -15,7 +15,6 @@ const INITIAL_REVIEWS = [
     color: '#C9A84C',
   },
   {
-    id: 2,
     name: 'Priya Nair',
     role: 'Marketing Manager',
     company: 'Visit254',
@@ -27,7 +26,6 @@ const INITIAL_REVIEWS = [
     color: '#C4622D',
   },
   {
-    id: 3,
     name: 'David Wa Kimani',
     role: 'Brand Strategist',
     company: 'Savanna Wear Co.',
@@ -45,9 +43,10 @@ const PROJECTS = [
   'Corporate Branding', 'Tourism Campaign', 'Studio', 'Fitness', 'Other',
 ]
 
+const AVATAR_COLORS = ['#C9A84C', '#C4622D', '#8B3A1A', '#A08030', '#5C4A2A']
+
 function StarRating({ value, onChange, readonly = false }) {
   const [hovered, setHovered] = useState(0)
-
   return (
     <div style={{ display: 'flex', gap: 4 }}>
       {[1, 2, 3, 4, 5].map(star => (
@@ -58,39 +57,67 @@ function StarRating({ value, onChange, readonly = false }) {
           onMouseEnter={() => !readonly && setHovered(star)}
           onMouseLeave={() => !readonly && setHovered(0)}
           style={{
-            background: 'none',
-            border: 'none',
+            background: 'none', border: 'none',
             cursor: readonly ? 'default' : 'pointer',
-            padding: 0,
-            fontSize: 20,
+            padding: 0, fontSize: 20, lineHeight: 1,
             color: star <= (hovered || value) ? '#C9A84C' : 'rgba(201,168,76,0.2)',
             transition: 'color 0.2s',
-            lineHeight: 1,
           }}
-        >
-          ★
-        </button>
+        >★</button>
       ))}
     </div>
   )
 }
 
 export default function Reviews() {
-  const [reviews, setReviews]     = useState(INITIAL_REVIEWS)
-  const [showForm, setShowForm]   = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+  const [reviews, setReviews]       = useState([])
+  const [loading, setLoading]       = useState(true)
+  const [showForm, setShowForm]     = useState(false)
+  const [submitted, setSubmitted]   = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError]           = useState('')
   const [form, setForm] = useState({
     name: '', role: '', company: '', project: '', rating: 0, text: '',
   })
-  const [error, setError] = useState('')
+
+  useEffect(() => { initReviews() }, [])
+
+  const fetchReviews = async () => {
+    const { data, error: err } = await supabase
+      .from('reviews')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (err) throw err
+    return data || []
+  }
+
+  const initReviews = async () => {
+    setLoading(true)
+    try {
+      // Check if table is empty, seed if so
+      const { count } = await supabase
+        .from('reviews')
+        .select('*', { count: 'exact', head: true })
+
+      if (count === 0) {
+        await supabase.from('reviews').insert(INITIAL_REVIEWS)
+      }
+
+      setReviews(await fetchReviews())
+    } catch (err) {
+      console.error('DB error:', err.message)
+      setReviews(INITIAL_REVIEWS) // fallback if DB unreachable
+    }
+    setLoading(false)
+  }
 
   const handleChange = e =>
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
 
   const validate = () => {
-    if (!form.name.trim())    return 'Please enter your name.'
-    if (!form.rating)         return 'Please select a star rating.'
-    if (!form.text.trim())    return 'Please write your review.'
+    if (!form.name.trim())     return 'Please enter your name.'
+    if (!form.rating)          return 'Please select a star rating.'
+    if (!form.text.trim())     return 'Please write your review.'
     if (form.text.length < 20) return 'Review must be at least 20 characters.'
     return ''
   }
@@ -98,28 +125,43 @@ export default function Reviews() {
   const getInitials = name =>
     name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
 
-  const AVATAR_COLORS = ['#C9A84C', '#C4622D', '#8B3A1A', '#A08030', '#1E1610']
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const err = validate()
     if (err) { setError(err); return }
     setError('')
+    setSubmitting(true)
 
     const newReview = {
-      id: Date.now(),
-      name: form.name.trim(),
-      role: form.role.trim() || 'Client',
-      company: form.company.trim() || '',
-      project: form.project || 'General',
-      rating: form.rating,
-      text: form.text.trim(),
-      date: new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
+      name:     form.name.trim(),
+      role:     form.role.trim()    || 'Client',
+      company:  form.company.trim() || '',
+      project:  form.project        || 'General',
+      rating:   form.rating,
+      text:     form.text.trim(),
+      date:     new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
       initials: getInitials(form.name),
-      color: AVATAR_COLORS[reviews.length % AVATAR_COLORS.length],
+      color:    AVATAR_COLORS[reviews.length % AVATAR_COLORS.length],
     }
 
-    setReviews(prev => [newReview, ...prev])
+    try {
+      const { error: insertErr } = await supabase
+        .from('reviews')
+        .insert([newReview])
+
+      if (insertErr) throw insertErr
+
+      // Re-fetch from DB so everyone sees the same data
+      setReviews(await fetchReviews())
+
+    } catch (err) {
+      console.error('Insert error:', err.message)
+      setError('Could not save review. Please try again.')
+      setSubmitting(false)
+      return
+    }
+
     setForm({ name: '', role: '', company: '', project: '', rating: 0, text: '' })
+    setSubmitting(false)
     setSubmitted(true)
     setTimeout(() => {
       setSubmitted(false)
@@ -130,14 +172,12 @@ export default function Reviews() {
   return (
     <>
       <style>{`
-        /* ── SECTION ── */
         .reviews-section {
           padding: 120px 60px;
           background: var(--deep-black);
           position: relative;
           overflow: hidden;
         }
-
         .reviews-section::before {
           content: 'REVIEWS';
           position: absolute;
@@ -145,14 +185,11 @@ export default function Reviews() {
           font-size: 180px;
           color: transparent;
           -webkit-text-stroke: 1px rgba(201,168,76,0.04);
-          top: 20px;
-          right: -10px;
+          top: 20px; right: -10px;
           pointer-events: none;
           letter-spacing: 10px;
           line-height: 1;
         }
-
-        /* ── HEADER ── */
         .reviews-header {
           display: flex;
           align-items: flex-end;
@@ -161,7 +198,6 @@ export default function Reviews() {
           flex-wrap: wrap;
           gap: 24px;
         }
-
         .reviews-label {
           font-family: 'DM Sans', sans-serif;
           font-size: 10px;
@@ -173,15 +209,12 @@ export default function Reviews() {
           align-items: center;
           gap: 14px;
         }
-
         .reviews-label::before {
           content: '';
           display: block;
-          width: 30px;
-          height: 1px;
+          width: 30px; height: 1px;
           background: var(--gold);
         }
-
         .reviews-heading {
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(48px, 6vw, 80px);
@@ -189,7 +222,6 @@ export default function Reviews() {
           letter-spacing: 3px;
           color: var(--warm-white);
         }
-
         .reviews-heading em {
           color: var(--gold);
           font-family: 'Playfair Display', serif;
@@ -199,7 +231,6 @@ export default function Reviews() {
           letter-spacing: 1px;
           margin-bottom: 4px;
         }
-
         .reviews-summary {
           font-family: 'Cormorant Garamond', serif;
           font-size: 17px;
@@ -209,7 +240,6 @@ export default function Reviews() {
           max-width: 340px;
           text-align: right;
         }
-
         .reviews-summary strong {
           color: var(--gold);
           font-weight: 400;
@@ -221,16 +251,33 @@ export default function Reviews() {
           line-height: 1;
           margin-bottom: 6px;
         }
-
-        /* ── GRID ── */
+        .reviews-loading {
+          text-align: center;
+          padding: 80px 0;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 10px;
+          letter-spacing: 5px;
+          text-transform: uppercase;
+          color: rgba(201,168,76,0.35);
+        }
+        .reviews-loading::after {
+          content: '';
+          display: block;
+          width: 32px; height: 1px;
+          background: var(--gold);
+          margin: 16px auto 0;
+          animation: loadPulse 1.2s ease-in-out infinite;
+        }
+        @keyframes loadPulse {
+          0%, 100% { opacity: 0.2; transform: scaleX(0.5); }
+          50%       { opacity: 1;   transform: scaleX(1); }
+        }
         .reviews-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 2px;
           margin-bottom: 60px;
         }
-
-        /* ── REVIEW CARD ── */
         .review-card {
           padding: 44px 36px;
           background: rgba(20,15,8,0.6);
@@ -242,18 +289,14 @@ export default function Reviews() {
           flex-direction: column;
           gap: 20px;
         }
-
         .review-card:hover {
           border-color: rgba(201,168,76,0.2);
           background: rgba(201,168,76,0.03);
         }
-
-        /* Quote mark */
         .review-card::before {
-          content: '“';
+          content: '"';
           position: absolute;
-          top: 16px;
-          right: 24px;
+          top: 16px; right: 24px;
           font-family: 'Playfair Display', serif;
           font-size: 80px;
           color: var(--gold);
@@ -261,12 +304,9 @@ export default function Reviews() {
           line-height: 1;
           pointer-events: none;
         }
-
-        /* New badge */
         .review-new-badge {
           position: absolute;
-          top: 16px;
-          left: 16px;
+          top: 16px; left: 16px;
           font-family: 'DM Sans', sans-serif;
           font-size: 8px;
           letter-spacing: 3px;
@@ -275,23 +315,9 @@ export default function Reviews() {
           background: var(--gold);
           padding: 3px 10px;
         }
-
-        /* Stars */
-        .review-stars {
-          display: flex;
-          gap: 3px;
-        }
-
-        .review-star {
-          font-size: 14px;
-          color: var(--gold);
-        }
-
-        .review-star.empty {
-          color: rgba(201,168,76,0.2);
-        }
-
-        /* Text */
+        .review-stars      { display: flex; gap: 3px; }
+        .review-star       { font-size: 14px; color: var(--gold); }
+        .review-star.empty { color: rgba(201,168,76,0.2); }
         .review-text {
           font-family: 'Cormorant Garamond', serif;
           font-size: 17px;
@@ -300,8 +326,6 @@ export default function Reviews() {
           line-height: 1.85;
           flex: 1;
         }
-
-        /* Project tag */
         .review-project-tag {
           display: inline-block;
           font-family: 'DM Sans', sans-serif;
@@ -313,8 +337,6 @@ export default function Reviews() {
           padding: 4px 12px;
           width: fit-content;
         }
-
-        /* Author */
         .review-author {
           display: flex;
           align-items: center;
@@ -322,10 +344,8 @@ export default function Reviews() {
           padding-top: 20px;
           border-top: 1px solid rgba(201,168,76,0.08);
         }
-
         .review-avatar {
-          width: 44px;
-          height: 44px;
+          width: 44px; height: 44px;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -336,7 +356,6 @@ export default function Reviews() {
           color: var(--deep-black);
           flex-shrink: 0;
         }
-
         .review-name {
           font-family: 'Bebas Neue', sans-serif;
           font-size: 16px;
@@ -344,14 +363,12 @@ export default function Reviews() {
           color: var(--warm-white);
           margin-bottom: 3px;
         }
-
         .review-role {
           font-family: 'DM Sans', sans-serif;
           font-size: 11px;
           color: rgba(245,237,216,0.4);
           letter-spacing: 0.5px;
         }
-
         .review-date {
           font-family: 'DM Sans', sans-serif;
           font-size: 10px;
@@ -360,8 +377,6 @@ export default function Reviews() {
           margin-left: auto;
           white-space: nowrap;
         }
-
-        /* ── ADD REVIEW BUTTON ── */
         .add-review-btn {
           display: flex;
           align-items: center;
@@ -379,21 +394,16 @@ export default function Reviews() {
           transition: background 0.3s, border-color 0.3s;
           margin-bottom: 48px;
         }
-
         .add-review-btn:hover {
           background: rgba(201,168,76,0.06);
           border-color: rgba(201,168,76,0.45);
         }
-
-        /* ── FORM ── */
         .review-form-wrap {
           background: var(--warm-dark);
           border: 1px solid rgba(201,168,76,0.12);
           padding: 52px 48px;
           margin-bottom: 48px;
-          position: relative;
         }
-
         .review-form-title {
           font-family: 'Bebas Neue', sans-serif;
           font-size: 28px;
@@ -401,7 +411,6 @@ export default function Reviews() {
           color: var(--gold);
           margin-bottom: 8px;
         }
-
         .review-form-subtitle {
           font-family: 'Cormorant Garamond', serif;
           font-size: 16px;
@@ -409,21 +418,13 @@ export default function Reviews() {
           color: rgba(245,237,216,0.4);
           margin-bottom: 40px;
         }
-
         .review-form-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 0 40px;
         }
-
-        .review-form-group {
-          margin-bottom: 28px;
-        }
-
-        .review-form-group.full {
-          grid-column: span 2;
-        }
-
+        .review-form-group      { margin-bottom: 28px; }
+        .review-form-group.full { grid-column: span 2; }
         .review-form-label {
           display: block;
           font-family: 'DM Sans', sans-serif;
@@ -434,12 +435,7 @@ export default function Reviews() {
           opacity: 0.45;
           margin-bottom: 10px;
         }
-
-        .review-form-label .required {
-          color: var(--gold);
-          margin-left: 3px;
-        }
-
+        .review-form-label .required { color: var(--gold); margin-left: 3px; }
         .review-form-input,
         .review-form-select,
         .review-form-textarea {
@@ -454,30 +450,12 @@ export default function Reviews() {
           outline: none;
           transition: border-color 0.3s;
         }
-
         .review-form-input:focus,
         .review-form-select:focus,
-        .review-form-textarea:focus {
-          border-bottom-color: var(--gold);
-        }
-
-        .review-form-select {
-          cursor: pointer;
-          appearance: none;
-        }
-
-        .review-form-select option {
-          background: var(--warm-dark);
-          color: var(--cream);
-        }
-
-        .review-form-textarea {
-          resize: none;
-          height: 110px;
-          line-height: 1.6;
-        }
-
-        /* Rating row */
+        .review-form-textarea:focus { border-bottom-color: var(--gold); }
+        .review-form-select    { cursor: pointer; appearance: none; }
+        .review-form-select option { background: var(--warm-dark); color: var(--cream); }
+        .review-form-textarea  { resize: none; height: 110px; line-height: 1.6; }
         .rating-row {
           display: flex;
           align-items: center;
@@ -485,15 +463,12 @@ export default function Reviews() {
           padding: 8px 0;
           border-bottom: 1px solid rgba(201,168,76,0.2);
         }
-
         .rating-label-text {
           font-family: 'DM Sans', sans-serif;
           font-size: 11px;
           letter-spacing: 1px;
           color: rgba(245,237,216,0.4);
         }
-
-        /* Form error */
         .review-form-error {
           font-family: 'DM Sans', sans-serif;
           font-size: 11px;
@@ -503,15 +478,12 @@ export default function Reviews() {
           background: rgba(220,100,100,0.06);
           margin-bottom: 20px;
         }
-
-        /* Form actions */
         .review-form-actions {
           display: flex;
           gap: 16px;
           align-items: center;
           margin-top: 8px;
         }
-
         .review-submit-btn {
           background: var(--gold);
           border: none;
@@ -524,15 +496,10 @@ export default function Reviews() {
           transition: background 0.3s, transform 0.2s;
           flex: 1;
         }
-
-        .review-submit-btn:hover { background: var(--gold-light); }
-        .review-submit-btn:active { transform: scale(0.98); }
-
-        .review-submit-btn.success {
-          background: #4CAF50;
-          color: #fff;
-        }
-
+        .review-submit-btn:hover    { background: var(--gold-light); }
+        .review-submit-btn:active   { transform: scale(0.98); }
+        .review-submit-btn.success  { background: #4CAF50; color: #fff; }
+        .review-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .review-cancel-btn {
           background: transparent;
           border: 1px solid rgba(201,168,76,0.2);
@@ -545,13 +512,10 @@ export default function Reviews() {
           cursor: pointer;
           transition: border-color 0.3s, color 0.3s;
         }
-
         .review-cancel-btn:hover {
           border-color: rgba(245,237,216,0.3);
           color: var(--cream);
         }
-
-        /* ── CHAR COUNT ── */
         .char-count {
           font-family: 'DM Sans', sans-serif;
           font-size: 10px;
@@ -560,22 +524,19 @@ export default function Reviews() {
           margin-top: 6px;
           letter-spacing: 1px;
         }
-
-        /* ── RESPONSIVE ── */
         @media (max-width: 900px) {
-          .reviews-section   { padding: 80px 30px; }
-          .reviews-grid      { grid-template-columns: 1fr; }
-          .reviews-header    { flex-direction: column; align-items: flex-start; }
-          .reviews-summary   { text-align: left; }
-          .review-form-wrap  { padding: 36px 28px; }
-          .review-form-grid  { grid-template-columns: 1fr; }
+          .reviews-section  { padding: 80px 30px; }
+          .reviews-grid     { grid-template-columns: 1fr; }
+          .reviews-header   { flex-direction: column; align-items: flex-start; }
+          .reviews-summary  { text-align: left; }
+          .review-form-wrap { padding: 36px 28px; }
+          .review-form-grid { grid-template-columns: 1fr; }
           .review-form-group.full { grid-column: span 1; }
           .reviews-section::before { font-size: 100px; }
         }
-
         @media (max-width: 560px) {
-          .reviews-section   { padding: 60px 20px; }
-          .review-card       { padding: 32px 24px; }
+          .reviews-section     { padding: 60px 20px; }
+          .review-card         { padding: 32px 24px; }
           .review-form-actions { flex-direction: column; }
           .review-cancel-btn   { width: 100%; text-align: center; }
         }
@@ -583,7 +544,6 @@ export default function Reviews() {
 
       <section className="reviews-section" id="reviews">
 
-        {/* ── Header ── */}
         <div className="reviews-header">
           <div>
             <p className="reviews-label">Client Feedback</p>
@@ -599,7 +559,6 @@ export default function Reviews() {
           </div>
         </div>
 
-        {/* ── Add Review Button ── */}
         {!showForm && (
           <button className="add-review-btn" onClick={() => setShowForm(true)}>
             <svg width="16" height="16" fill="none" stroke="currentColor"
@@ -611,75 +570,38 @@ export default function Reviews() {
           </button>
         )}
 
-        {/* ── Review Form ── */}
         {showForm && (
           <div className="review-form-wrap">
             <p className="review-form-title">Share Your Experience</p>
             <p className="review-form-subtitle">
               Tell others about your project with African Couzin
             </p>
-
             <div className="review-form-grid">
-
-              {/* Name */}
               <div className="review-form-group">
-                <label className="review-form-label">
-                  Your Name <span className="required">*</span>
-                </label>
-                <input
-                  name="name"
-                  className="review-form-input"
-                  placeholder="e.g. Amara Osei"
-                  value={form.name}
-                  onChange={handleChange}
-                />
+                <label className="review-form-label">Your Name <span className="required">*</span></label>
+                <input name="name" className="review-form-input"
+                  placeholder="e.g. Amara Osei" value={form.name} onChange={handleChange} />
               </div>
-
-              {/* Role */}
               <div className="review-form-group">
                 <label className="review-form-label">Your Role / Title</label>
-                <input
-                  name="role"
-                  className="review-form-input"
-                  placeholder="e.g. Creative Director"
-                  value={form.role}
-                  onChange={handleChange}
-                />
+                <input name="role" className="review-form-input"
+                  placeholder="e.g. Creative Director" value={form.role} onChange={handleChange} />
               </div>
-
-              {/* Company */}
               <div className="review-form-group">
                 <label className="review-form-label">Company / Brand</label>
-                <input
-                  name="company"
-                  className="review-form-input"
-                  placeholder="e.g. Savanna Wear Co."
-                  value={form.company}
-                  onChange={handleChange}
-                />
+                <input name="company" className="review-form-input"
+                  placeholder="e.g. Savanna Wear Co." value={form.company} onChange={handleChange} />
               </div>
-
-              {/* Project type */}
               <div className="review-form-group">
                 <label className="review-form-label">Project Type</label>
-                <select
-                  name="project"
-                  className="review-form-select"
-                  value={form.project}
-                  onChange={handleChange}
-                >
+                <select name="project" className="review-form-select"
+                  value={form.project} onChange={handleChange}>
                   <option value="">Select a category</option>
-                  {PROJECTS.map(p => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
+                  {PROJECTS.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
-
-              {/* Star rating */}
               <div className="review-form-group full">
-                <label className="review-form-label">
-                  Your Rating <span className="required">*</span>
-                </label>
+                <label className="review-form-label">Your Rating <span className="required">*</span></label>
                 <div className="rating-row">
                   <StarRating
                     value={form.rating}
@@ -695,92 +617,61 @@ export default function Reviews() {
                   </span>
                 </div>
               </div>
-
-              {/* Review text */}
               <div className="review-form-group full">
-                <label className="review-form-label">
-                  Your Review <span className="required">*</span>
-                </label>
-                <textarea
-                  name="text"
-                  className="review-form-textarea"
-                  placeholder="Describe your experience working with Meshack on your project..."
-                  value={form.text}
-                  onChange={handleChange}
-                  maxLength={500}
-                />
+                <label className="review-form-label">Your Review <span className="required">*</span></label>
+                <textarea name="text" className="review-form-textarea"
+                  placeholder="Describe your experience working with Samuel on your project..."
+                  value={form.text} onChange={handleChange} maxLength={500} />
                 <p className="char-count">{form.text.length} / 500</p>
               </div>
-
             </div>
-
-            {/* Error */}
             {error && <p className="review-form-error">{error}</p>}
-
-            {/* Actions */}
             <div className="review-form-actions">
               <button
                 className={`review-submit-btn ${submitted ? 'success' : ''}`}
                 onClick={handleSubmit}
+                disabled={submitting}
               >
-                {submitted ? 'Review Posted ✓' : 'Post Review'}
+                {submitting ? 'Posting...' : submitted ? 'Review Posted ✓' : 'Post Review'}
               </button>
-              <button
-                className="review-cancel-btn"
-                onClick={() => { setShowForm(false); setError('') }}
-              >
+              <button className="review-cancel-btn"
+                onClick={() => { setShowForm(false); setError('') }}>
                 Cancel
               </button>
             </div>
           </div>
         )}
 
-        {/* ── Reviews Grid ── */}
-        <div className="reviews-grid">
-          {reviews.map((review, idx) => (
-            <div className="review-card" key={review.id}>
-
-              {/* New badge for freshly added reviews */}
-              {idx === 0 && reviews.length > INITIAL_REVIEWS.length && (
-                <span className="review-new-badge">New</span>
-              )}
-
-              {/* Stars */}
-              <div className="review-stars">
-                {[1, 2, 3, 4, 5].map(s => (
-                  <span
-                    key={s}
-                    className={`review-star ${s <= review.rating ? '' : 'empty'}`}
-                  >★</span>
-                ))}
-              </div>
-
-              {/* Review text */}
-              <p className="review-text">"{review.text}"</p>
-
-              {/* Project tag */}
-              <span className="review-project-tag">{review.project}</span>
-
-              {/* Author */}
-              <div className="review-author">
-                <div
-                  className="review-avatar"
-                  style={{ background: review.color }}
-                >
-                  {review.initials}
+        {loading ? (
+          <div className="reviews-loading">Loading reviews</div>
+        ) : (
+          <div className="reviews-grid">
+            {reviews.map((review, idx) => (
+              <div className="review-card" key={review.id || idx}>
+                {idx === 0 && <span className="review-new-badge">Latest</span>}
+                <div className="review-stars">
+                  {[1,2,3,4,5].map(s => (
+                    <span key={s} className={`review-star ${s <= review.rating ? '' : 'empty'}`}>★</span>
+                  ))}
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className="review-name">{review.name}</p>
-                  <p className="review-role">
-                    {review.role}{review.company ? ` · ${review.company}` : ''}
-                  </p>
+                <p className="review-text">"{review.text}"</p>
+                <span className="review-project-tag">{review.project}</span>
+                <div className="review-author">
+                  <div className="review-avatar" style={{ background: review.color }}>
+                    {review.initials}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className="review-name">{review.name}</p>
+                    <p className="review-role">
+                      {review.role}{review.company ? ` · ${review.company}` : ''}
+                    </p>
+                  </div>
+                  <span className="review-date">{review.date}</span>
                 </div>
-                <span className="review-date">{review.date}</span>
               </div>
-
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
       </section>
     </>
