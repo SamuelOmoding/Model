@@ -11,7 +11,7 @@ export default function Footer() {
         Versatility & Authenticity · Nairobi, Kenya
       </span>
       <span style={{ fontSize: 10, letterSpacing: 2, opacity: 0.8, color: 'var(--warm-white)' }}>
-        © 2025 African_Couzin
+        © 2026 African_Couzin
       </span>
     </footer>
   )
