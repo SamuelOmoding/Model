@@ -57,6 +57,7 @@ import m28 from '../assets/photo-14.jpeg'
 import { i } from 'framer-motion/client'
 
 const PHOTOS = [
+    { id: 17, src: j2, label: 'Casual', category: 'Energy', featured: false },
   { id: 1,  src: photo1,  label: 'Featured',   category: 'Editorial',          featured: true  },
   { id: 2,  src: photo2,  label: 'Lifestyle',   category: 'Lifestyle',          featured: false },
   { id: 3,  src: photo3,  label: 'Fashion',     category: 'Fashion',            featured: false },
@@ -72,7 +73,6 @@ const PHOTOS = [
   { id: 14, src: f1, label: 'Urban Jungle', category: 'Street', featured: false },
   { id: 15, src: g1, label: 'GYM', category: 'Bodybuilding', featured: false },
   { id: 16, src: j1, label: 'Street Style', category: 'Product', featured: false },
-  { id: 17, src: j2, label: 'Casual', category: 'Energy', featured: false },
   { id: 18, src: j3, label: 'Brand', category: 'Jooz fuels hustle', featured: false },
   { id: 19, src: l1, label: 'Business Meeting', category: 'Corporate', featured: false },
   { id: 20, src: l2, label: 'Professional Portrait', category: 'Corporate', featured: false },
