@@ -284,7 +284,7 @@ export default function About() {
         {/* ── IMAGE BLOCK ── */}
         <div className="about-image-block reveal">
           <div className="about-img-frame">
-            <img src={photo3} alt="AfricanCouzin portrait" />
+            <img src={photo3} alt="African_Couzin portrait" />
           </div>
 
           {/* Decorative elements */}
@@ -295,7 +295,7 @@ export default function About() {
 
         {/* ── CONTENT ── */}
         <div className="about-content">
-          <p className="section-label reveal">About AfricanCouzin</p>
+          <p className="section-label reveal">About African_Couzin</p>
 
           <h2 className="about-heading reveal">
             A Journey of
@@ -304,7 +304,7 @@ export default function About() {
           </h2>
 
           <p className="about-body reveal">
-            AfricanCouzin is a Nairobi-based model balancing a professional
+            African_Couzin is a Nairobi-based model balancing a professional
             career with a passion for visual storytelling and brand
             representation.
           </p>
@@ -318,7 +318,7 @@ export default function About() {
 
           <p className="about-body reveal">
             African_Couzin is passionate about working with brands that value
-            originality, culture, and meaningful impact — driven, disciplined,
+            originality, culture, and meaningful impact driven, disciplined,
             and camera-ready at every set.
           </p>
 
