@@ -5,25 +5,25 @@ import { supabase } from '../supabaseClient'
 
 const INITIAL_REVIEWS = [
   {
-    name: 'Sammie G-',
+    name: 'Sammie Juma',
     role: 'COO',
     company: 'Highmore Tours & Travel',
     project: 'Advertising Campaign',
     rating: 5,
-    text: 'African Couzin brought an incredible energy to our campaign. His ability to embody the brand identity while maintaining his authentic presence made every shot effortless. Truly a professional.',
+    text: ' African_Couzin brought an incredible energy to our campaign. His ability to embody the brand identity while maintaining his authentic presence made every shot effortless. Truly a professional.',
     date: 'February 2021',
     initials: 'SJ',
     color: '#C9A84C',
   },
   {
-    name: 'Priya Nair',
+    name: 'Harrison Oduor',
     role: 'Marketing Manager',
-    company: 'Visit254',
-    project: 'Tourism Campaign',
+    company: 'The Last Village Lodge',
+    project: 'Commercial Shoot',
     rating: 5,
-    text: 'Working with African Couzin on our Kenya tourism campaign was a seamless experience. He captured the spirit of the country beautifully — natural, confident, and culturally aware.',
-    date: 'November 2025',
-    initials: 'PN',
+    text: 'The best ad show and branding, @African_Couzin displays the top notch energy, style, and fashion that keeps the vibe moving. Thank you for #ValentinesDay show.',
+    date: 'February 2026',
+    initials: 'HO',
     color: '#C4622D',
   },
   {
@@ -32,7 +32,7 @@ const INITIAL_REVIEWS = [
     company: 'Savanna Wear Co.',
     project: 'Commercial',
     rating: 5,
-    text: 'African Couzin exceeded every expectation. His professionalism on set, combined with his natural charisma in front of the camera, gave our brand exactly the elevated look we were going for.',
+    text: ' African_Couzin exceeded every expectation. His professionalism on set, combined with his natural charisma in front of the camera, gave our brand exactly the elevated look we were going for.',
     date: 'August 2024',
     initials: 'DK',
     color: '#8B3A1A',
@@ -931,7 +931,7 @@ export default function Reviews() {
           {showForm && (
             <div className="review-form-wrap">
               <p className="review-form-title">Share Your Experience</p>
-              <p className="review-form-subtitle">Tell others about your project with African Couzin</p>
+              <p className="review-form-subtitle">Tell others about your project with  African_Couzin</p>
 
               <div className="review-form-grid">
                 <div className="review-form-group">

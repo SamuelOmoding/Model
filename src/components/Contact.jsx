@@ -393,7 +393,7 @@ export default function Contact() {
                     onChange={handleChange}
                     placeholder={
                       channel === 'whatsapp'
-                        ? 'Hi Samuel, I\'d like to discuss a project with you...'
+                        ? 'Hi African_Couzin, I\'d like to discuss a project with you...'
                         : 'Tell me about your project...'
                     }
                   />

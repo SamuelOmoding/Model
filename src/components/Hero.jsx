@@ -111,7 +111,7 @@ export default function Hero() {
           transform: scale(1.03);
         }
 
-        /* Left-edge fade — blends photo into dark background */
+        /* Left-edge fade  blends photo into dark background */
         .hero-right::before {
           content: '';
           position: absolute;
@@ -230,7 +230,7 @@ export default function Hero() {
     order: -1;
   }
 
-  /* Override left fade — fade bottom instead */
+  /* Override left fade  fade bottom instead */
   .hero-right::before {
     background: linear-gradient(
       to bottom, transparent 40%, var(--deep-black) 100%
@@ -261,7 +261,7 @@ export default function Hero() {
 
       <section id='home'className="hero-section">
 
-        {/* ── LEFT — Text ── */}
+        {/* ── LEFT  Text ── */}
         <div className="hero-left">
 
           <p className="hero-eyebrow hero-reveal">
@@ -274,7 +274,7 @@ export default function Hero() {
           </h1>
 
           <p className="hero-tagline hero-reveal">
-            Versatility & Authenticity — where culture meets vision,
+            Versatility & Authenticity: where culture meets vision,
             and every frame tells a story.
           </p>
 
@@ -293,9 +293,9 @@ export default function Hero() {
 
         </div>
 
-        {/* ── RIGHT — Photo ── */}
+        {/* ── RIGHT  Photo ── */}
         <div className="hero-right hero-reveal">
-          <img src={photo9} alt="AfricanCouzin hero portrait" />
+          <img src={photo9} alt="African_Couzin hero portrait" />
 
           <div className="hero-badge">
             <span className="hero-badge-title">Professional Model</span>

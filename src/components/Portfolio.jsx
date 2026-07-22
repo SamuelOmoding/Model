@@ -14,6 +14,18 @@ import photo10 from '../assets/photo-4.jpeg'
 import photo11 from '../assets/photo-11.jpeg'
 
 //--marquee strip--
+import c1 from '../assets/adds/c1.jpeg'
+import f1 from '../assets/adds/f1.jpeg'
+import g1 from '../assets/adds/g1.jpeg'
+import j1 from '../assets/adds/j1.jpeg'
+import j2 from '../assets/adds/j2.jpeg'
+import j3 from '../assets/adds/j3.jpeg'
+import l1 from '../assets/adds/l1.jpeg'
+import l2 from '../assets/adds/l2.jpeg'
+import s1 from '../assets/adds/s1.jpeg'
+import s2 from '../assets/adds/s2.jpeg'
+import s3 from '../assets/adds/s3.jpeg'
+import s4 from '../assets/adds/s4.jpeg'
 import m1 from '../assets/m/m1.png'
 import m2 from '../assets/m/m2.png'
 import m3 from '../assets/m/m3.png'
@@ -56,6 +68,18 @@ const PHOTOS = [
   { id: 9,  src: photo9,  label: 'Portrait',    category: 'Portrait',           featured: false },
   { id: 10, src: photo10, label: 'Brand',       category: 'Brand',              featured: false },
   { id: 11, src: photo11, label: 'Night Shot',      category: 'NS',             featured: false },
+  { id: 12, src: c1, label: 'Fitness', category: 'Brand', featured: false },
+  { id: 14, src: f1, label: 'Urban Jungle', category: 'Street', featured: false },
+  { id: 15, src: g1, label: 'GYM', category: 'Bodybuilding', featured: false },
+  { id: 16, src: j1, label: 'Street Style', category: 'Product', featured: false },
+  { id: 17, src: j2, label: 'Casual', category: 'Energy', featured: false },
+  { id: 18, src: j3, label: 'Brand', category: 'Jooz fuels hustle', featured: false },
+  { id: 19, src: l1, label: 'Business Meeting', category: 'Corporate', featured: false },
+  { id: 20, src: l2, label: 'Professional Portrait', category: 'Corporate', featured: false },
+  { id: 21, src: s1, label: 'Performance', category: 'Clear Vision', featured: false },
+  { id: 22, src: s2, label: 'Action Shot', category: 'Gaming', featured: false },
+  { id: 23, src: s3, label: 'Sports', category: 'Athlete Lifestyle', featured: false},
+  { id: 24, src: s4, label: 'Shades on', category: 'Sports-Eye-wear', featured: false },
 
 ]
 
