@@ -1,9 +1,28 @@
 // src/components/Hero.jsx
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import photo9 from "../assets/photo-9.jpeg"
+import hero1 from "../assets/hero1.jpeg"
+import her01 from "../assets/her01.jpeg"
+
+// Hero photos, shown in this order. Each one stays for 4 seconds.
+const HERO_PHOTOS = [
+  { src: photo9, alt: "African_Couzin in a navy suit and sunglasses" },
+  { src: hero1, alt: "African_Couzin studio portrait in profile" },
+  { src: her01, alt: "African_Couzin studio portrait in a black jacket" },
+]
+const SLIDE_INTERVAL = 4000
 
 export default function Hero() {
   const hasAnimated = useRef(false)
+  const [current, setCurrent] = useState(0)
+
+  // Switch to the next photo every 4 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((i) => (i + 1) % HERO_PHOTOS.length)
+    }, SLIDE_INTERVAL)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     if (hasAnimated.current) return
@@ -98,17 +117,55 @@ export default function Hero() {
           overflow: hidden;
         }
 
+        /* Slideshow: photos are stacked and cross-fade */
         .hero-right img {
+          position: absolute;
+          inset: 0;
           width: 100%;
           height: 100%;
           object-fit: cover;
           object-position: center top;
           display: block;
-          transition: transform 0.8s ease;
+          opacity: 0;
+          transform: scale(1.06);
+          transition: opacity 1.2s ease, transform 5s ease-out;
         }
 
-        .hero-right:hover img {
+        .hero-right img.active {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        .hero-right:hover img.active {
           transform: scale(1.03);
+          transition: opacity 1.2s ease, transform 0.8s ease;
+        }
+
+        /* Slide indicators */
+        .hero-dots {
+          position: absolute;
+          bottom: 40px;
+          right: 40px;
+          z-index: 3;
+          display: flex;
+          gap: 10px;
+        }
+
+        .hero-dot {
+          width: 28px;
+          height: 2px;
+          padding: 0;
+          border: none;
+          background: rgba(201,168,76,0.3);
+          cursor: pointer;
+          transition: background 0.4s ease;
+        }
+
+        .hero-dot.active { background: var(--gold); }
+
+        @media (prefers-reduced-motion: reduce) {
+          .hero-right img,
+          .hero-right img.active { transform: none; transition: opacity 0.6s ease; }
         }
 
         /* Left-edge fade  blends photo into dark background */
@@ -250,6 +307,8 @@ export default function Hero() {
   }
 
   .hero-scroll { display: none !important; }
+
+  .hero-dots { bottom: 16px; right: 16px; }
 }
 
 @media (max-width: 400px) {
@@ -259,7 +318,7 @@ export default function Hero() {
 }
       `}</style>
 
-      <section id='home'className="hero-section">
+      <section id='home' className="hero-section">
 
         {/* ── LEFT  Text ── */}
         <div className="hero-left">
@@ -295,7 +354,26 @@ export default function Hero() {
 
         {/* ── RIGHT  Photo ── */}
         <div className="hero-right hero-reveal">
-          <img src={photo9} alt="African_Couzin hero portrait" />
+          {HERO_PHOTOS.map((photo, i) => (
+            <img
+              key={i}
+              src={photo.src}
+              alt={photo.alt}
+              className={i === current ? 'active' : ''}
+              aria-hidden={i !== current}
+            />
+          ))}
+
+          <div className="hero-dots">
+            {HERO_PHOTOS.map((_, i) => (
+              <button
+                key={i}
+                className={`hero-dot ${i === current ? 'active' : ''}`}
+                onClick={() => setCurrent(i)}
+                aria-label={`Show photo ${i + 1}`}
+              />
+            ))}
+          </div>
 
           <div className="hero-badge">
             <span className="hero-badge-title">Professional Model</span>
@@ -313,6 +391,4 @@ export default function Hero() {
     </>
   )
 }
-
-
 

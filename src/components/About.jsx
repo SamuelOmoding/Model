@@ -1,9 +1,27 @@
 // src/components/About.jsx
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import her01 from "../assets/her01.jpeg";
 import photo3 from "../assets/photo-3.jpeg";
+
+
+// About photos, shown in this order. Each one stays for 4 seconds.
+const ABOUT_PHOTOS = [
+  { src: photo3, alt: "African_Couzin portrait in a leather jacket" },
+  { src: her01, alt: "African_Couzin studio portrait in a black jacket" },
+];
+const SLIDE_INTERVAL = 4000;
 
 export default function About() {
   const sectionRef = useRef(null);
+  const [current, setCurrent] = useState(0);
+
+  // Switch to the next photo every 4 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((i) => (i + 1) % ABOUT_PHOTOS.length);
+    }, SLIDE_INTERVAL);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -66,17 +84,55 @@ export default function About() {
           overflow: hidden;
         }
 
+        /* Slideshow: photos are stacked and cross-fade */
         .about-img-frame img {
+          position: absolute;
+          inset: 0;
           width: 100%;
           height: 100%;
           object-fit: cover;
           object-position: center top;
           display: block;
-          transition: transform 0.7s ease;
+          opacity: 0;
+          transform: scale(1.06);
+          transition: opacity 1.2s ease, transform 5s ease-out;
         }
 
-        .about-img-frame:hover img {
+        .about-img-frame img.active {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        .about-img-frame:hover img.active {
           transform: scale(1.04);
+          transition: opacity 1.2s ease, transform 0.7s ease;
+        }
+
+        /* Slide indicators */
+        .about-dots {
+          position: absolute;
+          bottom: 28px;
+          right: 28px;
+          z-index: 3;
+          display: flex;
+          gap: 10px;
+        }
+
+        .about-dot {
+          width: 28px;
+          height: 2px;
+          padding: 0;
+          border: none;
+          background: rgba(201,168,76,0.3);
+          cursor: pointer;
+          transition: background 0.4s ease;
+        }
+
+        .about-dot.active { background: var(--gold); }
+
+        @media (prefers-reduced-motion: reduce) {
+          .about-img-frame img,
+          .about-img-frame img.active { transform: none; transition: opacity 0.6s ease; }
         }
 
         .about-img-frame::after {
@@ -284,7 +340,26 @@ export default function About() {
         {/* ── IMAGE BLOCK ── */}
         <div className="about-image-block reveal">
           <div className="about-img-frame">
-            <img src={photo3} alt="African_Couzin portrait" />
+            {ABOUT_PHOTOS.map((photo, i) => (
+              <img
+                key={i}
+                src={photo.src}
+                alt={photo.alt}
+                className={i === current ? "active" : ""}
+                aria-hidden={i !== current}
+              />
+            ))}
+
+            <div className="about-dots">
+              {ABOUT_PHOTOS.map((_, i) => (
+                <button
+                  key={i}
+                  className={`about-dot ${i === current ? "active" : ""}`}
+                  onClick={() => setCurrent(i)}
+                  aria-label={`Show photo ${i + 1}`}
+                />
+              ))}
+            </div>
           </div>
 
           {/* Decorative elements */}
@@ -359,3 +434,5 @@ export default function About() {
     </>
   );
 }
+
+
